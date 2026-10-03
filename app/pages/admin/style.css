@@ -1,0 +1,130 @@
+@import "#app/shared/styles/page.css";
+
+.admin-page {
+  padding-block: var(--space-10) var(--space-16);
+}
+
+.admin-head {
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.admin-stat .card-body {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.admin-stat-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-stat-label {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.admin-toolbar {
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.admin-toolbar input {
+  max-width: 22rem;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table td {
+  vertical-align: middle;
+}
+
+.admin-table .admin-job {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.admin-table .admin-job a {
+  font-weight: var(--weight-medium);
+}
+
+.admin-table .admin-job span {
+  color: var(--ink-soft);
+}
+
+.admin-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.admin-table .actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.admin-table tr.is-removed td {
+  opacity: 0.6;
+}
+
+@media (max-width: 56rem) {
+  .admin-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.admin-toolbar .tabs {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.admin-table-wrap {
+  max-width: 100%;
+}
+
+@media (max-width: 40rem) {
+  .admin-toolbar input {
+    max-width: none;
+  }
+}
+
+/* On a phone the row keeps the listing, its status and the actions. */
+@media (max-width: 40rem) {
+  .admin-table th:nth-child(3),
+  .admin-table td:nth-child(3),
+  .admin-table th:nth-child(4),
+  .admin-table td:nth-child(4),
+  .admin-table th:nth-child(5),
+  .admin-table td:nth-child(5),
+  .admin-table th:nth-child(6),
+  .admin-table td:nth-child(6) {
+    display: none;
+  }
+
+  .admin-table td:first-child {
+    width: 100%;
+    max-width: 0;
+  }
+
+  .admin-table .admin-job span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-table .actions .cluster {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}

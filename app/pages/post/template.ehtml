@@ -1,0 +1,100 @@
+import "./style.css";
+import { ValidationError, redirect } from "@elements/app";
+import config from "#config";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { Layout } from "#app/shared/templates/layout";
+import { FieldErrors, ListingFields, blankListingForm } from "#app/shared/templates/listing-fields";
+import { ListingForm } from "#app/shared/services/listings";
+import { formatCents } from "#app/shared/format";
+import { createListing } from "./services";
+
+interface PostState {
+  form: ListingForm;
+  feature: boolean;
+  errors: FieldErrors;
+  error: string;
+  busy: boolean;
+}
+
+async function onSubmit(state: PostState) {
+  state.busy = true;
+  state.error = "";
+
+  try {
+    let result = await createListing(state.form, state.feature);
+    redirect(result.redirectTo);
+  } catch (err: any) {
+    state.busy = false;
+
+    if (err instanceof ValidationError) {
+      state.errors = err.errors as FieldErrors;
+      state.error = "Some fields need a look before you can continue.";
+      return;
+    }
+
+    state.error = err.message ?? "Something went wrong. Try again.";
+  }
+}
+
+function total(feature: boolean): number {
+  return config.hirepin.publishCents + (feature ? config.hirepin.featureCents : 0);
+}
+
+<html lang="en" class="page-post" (
+  isAdmin: boolean,
+  private state: PostState = { form: blankListingForm(), feature: false, errors: {}, error: "", busy: false },
+)>
+  <head>
+    <title>Post a job · hirepin</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout {isAdmin}>
+      <div class="page-shell post-page stack is-xl">
+        <div class="stack is-sm">
+          <p class="eyebrow">For employers</p>
+          <h1>Post a remote job</h1>
+          <p class="lede">
+            {formatCents(config.hirepin.publishCents)} for {config.hirepin.listingDays} days on the board and in the
+            weekly email. No account: we email you a private link to edit it.
+          </p>
+        </div>
+
+        <form class="post-layout" onsubmit={() => onSubmit(state)}>
+          <ListingFields form={state.form} errors={state.errors} />
+
+          <aside class="post-summary card">
+            <div class="card-head"><h2>Your order</h2></div>
+            <div class="card-body stack is-md">
+              <div class="post-line">
+                <span>Listing, {config.hirepin.listingDays} days</span>
+                <span>{formatCents(config.hirepin.publishCents)}</span>
+              </div>
+
+              <label class={["post-feature", state.feature && "is-on"]}>
+                <input type="checkbox" checked={state.feature}>
+                <span class="stack is-xs">
+                  <strong>Feature it for {formatCents(config.hirepin.featureCents)}</strong>
+                  <span class="hint">Pinned to the top of the board and highlighted for the full {config.hirepin.listingDays} days.</span>
+                </span>
+              </label>
+
+              <div class="post-line is-total">
+                <span>Total</span>
+                <span>{formatCents(total(state.feature))}</span>
+              </div>
+
+              <p e:if={state.error} class="error" role="alert">{state.error}</p>
+
+              <button type="submit" class={["is-primary is-lg is-block", state.busy && "is-loading"]} disabled={state.busy}>
+                {state.busy ? "Opening checkout…" : `Continue to payment`}
+              </button>
+
+              <p class="hint">Secure card payment by Stripe. Your listing goes live the moment payment clears.</p>
+            </div>
+          </aside>
+        </form>
+      </div>
+    </Layout>
+  </body>
+</html>

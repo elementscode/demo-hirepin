@@ -1,0 +1,48 @@
+import "./style.css";
+import { formatSalary } from "#app/shared/format";
+import { CATEGORY_LABELS, Category } from "#app/shared/services/listings";
+
+export interface DigestJob {
+  id: string;
+  title: string;
+  companyName: string;
+  category: Category;
+  location: string;
+  salaryMin: number;
+  salaryMax: number;
+}
+
+/**
+ * The weekly email of new jobs in the categories a subscriber picked.
+ *
+ * @email
+ */
+<html (jobs: DigestJob[], categories: Category[], token: string)>
+  <body class="email digest">
+    <div class="email-wrap">
+      <p class="brand">hirepin</p>
+      <h1>{jobs.length} new remote {jobs.length === 1 ? "job" : "jobs"} this week</h1>
+      <p class="small">In {categories.map((c) => CATEGORY_LABELS[c]).join(", ")}.</p>
+
+      <table class="jobs" role="presentation" width="100%">
+        <tr e:for={job of jobs}>
+          <td>
+            <a class="title" href={`/jobs/${job.id}`}>{job.title}</a>
+            <div class="meta">
+              {job.companyName} · {job.location} · {formatSalary(job.salaryMin, job.salaryMax)}
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <p><a href="/">See every job on hirepin</a></p>
+
+      <div class="email-footer">
+        <p>
+          You subscribed to the hirepin weekly email.
+          {" "}<a href={`/unsubscribe/${token}`}>Unsubscribe</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

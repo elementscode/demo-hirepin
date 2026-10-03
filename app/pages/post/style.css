@@ -1,0 +1,62 @@
+@import "#app/shared/styles/page.css";
+
+.post-page {
+  padding-block: var(--space-10) var(--space-16);
+}
+
+.post-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 19rem;
+  gap: var(--space-10);
+  align-items: start;
+}
+
+.post-summary {
+  position: sticky;
+  top: 5rem;
+}
+
+.post-line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.post-line.is-total {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--rule);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-md);
+}
+
+.post-feature {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+.post-feature.is-on {
+  border-color: var(--accent-edge);
+  background: var(--accent-soft);
+}
+
+.post-feature input {
+  margin-top: 0.15rem;
+}
+
+@media (max-width: 56rem) {
+  .post-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .post-summary {
+    position: static;
+  }
+}

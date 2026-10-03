@@ -1,0 +1,181 @@
+import "./style.css";
+import { ValidationError, redirect } from "@elements/app";
+import config from "#config";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { Layout } from "#app/shared/templates/layout";
+import { FieldErrors, ListingFields } from "#app/shared/templates/listing-fields";
+import { Listing, ListingForm } from "#app/shared/services/listings";
+import { formatCents, formatDate } from "#app/shared/format";
+import { payForListing, updateListing } from "./services";
+
+interface ManageState {
+  listing: Listing;
+  form: ListingForm;
+  errors: FieldErrors;
+  saved: boolean;
+  error: string;
+  feature: boolean;
+  paying: boolean;
+  payError: string;
+}
+
+function formFor(listing: Listing): ListingForm {
+  return {
+    companyName: listing.companyName,
+    companyUrl: listing.companyUrl,
+    title: listing.title,
+    category: listing.category,
+    jobType: listing.jobType,
+    location: listing.location,
+    salaryMin: listing.salaryMin / 1000,
+    salaryMax: listing.salaryMax / 1000,
+    description: listing.description,
+    applyUrl: listing.applyUrl,
+    employerEmail: listing.employerEmail,
+    logo: null,
+  };
+}
+
+function onSave(token: string, state: ManageState) {
+  state.saved = false;
+  state.error = "";
+
+  try {
+    state.listing = updateListing(token, state.form);
+    state.form = formFor(state.listing);
+    state.errors = {};
+    state.saved = true;
+  } catch (err: any) {
+    if (err instanceof ValidationError) {
+      state.errors = err.errors as FieldErrors;
+      state.error = "Some fields need a look.";
+      return;
+    }
+
+    state.error = err.message ?? "Could not save. Try again.";
+  }
+}
+
+async function onPay(token: string, state: ManageState, feature: boolean) {
+  state.paying = true;
+  state.payError = "";
+
+  try {
+    redirect(await payForListing(token, feature));
+  } catch (err: any) {
+    state.paying = false;
+    state.payError = err.message ?? "Could not start checkout.";
+  }
+}
+
+function daysLeft(expiresAt: Date | null): number {
+  return expiresAt ? Math.max(0, Math.ceil((+expiresAt - Date.now()) / 86400000)) : 0;
+}
+
+<html lang="en" class="page-manage" (
+  token: string,
+  initial: Listing,
+  justPaid: boolean,
+  isAdmin: boolean,
+  private state: ManageState = {
+    listing: initial,
+    form: formFor(initial),
+    errors: {},
+    saved: false,
+    error: "",
+    feature: false,
+    paying: false,
+    payError: "",
+  },
+)>
+  <head>
+    <title>Manage your listing · hirepin</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout {isAdmin}>
+      <div class="page-shell manage-page stack is-xl">
+        <div class="stack is-sm">
+          <p class="eyebrow">Your listing</p>
+          <h1>{state.listing.title}</h1>
+          <p class="lede">{state.listing.companyName} · keep this page's link private: it is the key to your listing.</p>
+        </div>
+
+        <div e:if={justPaid && state.listing.status === "live"} class="callout is-success">
+          <div class="callout-title">Payment received. Your listing is live.</div>
+          <div class="callout-body">We've emailed your receipt and this link. <a href={`/jobs/${state.listing.id}`}>See it on the board</a>.</div>
+        </div>
+
+        <div e:elseif={justPaid} class="callout is-info">
+          <div class="callout-title">Payment processing</div>
+          <div class="callout-body">Your listing goes live as soon as Stripe confirms the payment. Reload in a minute.</div>
+        </div>
+
+        <div class="manage-layout">
+          <form class="stack is-lg" onsubmit={() => onSave(token, state)}>
+            <ListingFields form={state.form} errors={state.errors} logoUrl={state.listing.logoUrl} showEmail={false} />
+
+            <div class="manage-save cluster">
+              <span e:if={state.saved} class="pill is-success"><span class="pill-dot"></span>Saved</span>
+              <span e:if={state.error} class="error" role="alert">{state.error}</span>
+              <button type="submit" class="is-primary">Save changes</button>
+            </div>
+          </form>
+
+          <aside class="manage-status card">
+            <div class="card-body stack is-md">
+              <div e:switch={state.listing.status}>
+                <span e:case="live" class="pill is-success"><span class="pill-dot"></span>Live</span>
+                <span e:case="draft" class="pill is-warning"><span class="pill-dot"></span>Draft, not published</span>
+                <span e:case="expired" class="pill"><span class="pill-dot"></span>Expired</span>
+                <span e:default class="pill is-danger"><span class="pill-dot"></span>Removed</span>
+              </div>
+
+              <dl class="manage-facts">
+                <dt>Featured</dt>
+                <dd>{state.listing.featured ? "Yes" : "No"}</dd>
+                <dt e:if={state.listing.publishedAt}>Published</dt>
+                <dd e:if={state.listing.publishedAt}>{formatDate(state.listing.publishedAt!)}</dd>
+                <dt e:if={state.listing.expiresAt}>{state.listing.status === "live" ? "Expires" : "Expired"}</dt>
+                <dd e:if={state.listing.expiresAt}>{formatDate(state.listing.expiresAt!)}</dd>
+                <dt class="is-wide">Emails go to</dt>
+                <dd class="is-wide">{state.listing.employerEmail}</dd>
+              </dl>
+
+              <p e:if={state.listing.status === "live"} class="hint">
+                {daysLeft(state.listing.expiresAt)} days left. We'll email you {config.hirepin.reminderDays} days before it expires.
+              </p>
+
+              <a e:if={state.listing.status === "live"} class="button is-block" href={`/jobs/${state.listing.id}`}>View on the board</a>
+
+              <div e:if={state.listing.status === "draft" || state.listing.status === "expired"} class="stack is-sm">
+                <label class="manage-feature">
+                  <input type="checkbox" checked={state.feature}>
+                  <span>Also feature it, +{formatCents(config.hirepin.featureCents)}</span>
+                </label>
+                <button class={["is-primary is-block", state.paying && "is-loading"]}
+                        disabled={state.paying}
+                        onclick={() => onPay(token, state, state.feature)}>
+                  {state.listing.status === "draft" ? "Publish" : "Renew"} for {formatCents(config.hirepin.publishCents + (state.feature ? config.hirepin.featureCents : 0))}
+                </button>
+                <p class="hint">{config.hirepin.listingDays} days on the board, paid by card through Stripe.</p>
+              </div>
+
+              <div e:if={state.listing.status === "live" && !state.listing.featured} class="stack is-sm">
+                <button class={["is-primary is-block", state.paying && "is-loading"]}
+                        disabled={state.paying}
+                        onclick={() => onPay(token, state, true)}>
+                  Feature it for {formatCents(config.hirepin.featureCents)}
+                </button>
+                <p class="hint">Pins it to the top of the board until it expires.</p>
+              </div>
+
+              <p e:if={state.payError} class="error" role="alert">{state.payError}</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

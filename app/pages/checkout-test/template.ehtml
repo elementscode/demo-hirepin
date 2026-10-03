@@ -1,0 +1,91 @@
+import "./style.css";
+import { redirect } from "@elements/app";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { ListingPurchase, PurchaseLine } from "#app/shared/checkout";
+import { formatCents } from "#app/shared/format";
+import { payTestListing } from "./services";
+
+interface PayState {
+  busy: boolean;
+  error: string;
+}
+
+function onPay(purchase: ListingPurchase, state: PayState) {
+  state.busy = true;
+  state.error = "";
+
+  try {
+    redirect(payTestListing(purchase.editToken, purchase.feature));
+  } catch (err: any) {
+    state.busy = false;
+    state.error = err.message ?? "Could not record the payment. Try again.";
+  }
+}
+
+<html lang="en" class="page-checkout-test" (
+  purchase: ListingPurchase,
+  lines: PurchaseLine[],
+  total: number,
+  private state: PayState = { busy: false, error: "" },
+)>
+  <head>
+    <title>Checkout · hirepin</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <main class="checkout-shell">
+      <div class="checkout-top row">
+        <a href="/" class="checkout-brand row">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7z" fill="currentColor"/>
+            <circle cx="12" cy="9" r="2.6" fill="var(--bg)"/>
+          </svg>
+          hirepin
+        </a>
+        <span class="pill is-warning"><span class="pill-dot"></span>Test mode</span>
+      </div>
+
+      <section class="checkout-card card" aria-labelledby="checkout-title">
+        <div class="checkout-head">
+          <img e:if={purchase.logoUrl} class="checkout-logo" src={purchase.logoUrl!} alt="" width="48" height="48">
+          <span e:else class="checkout-logo is-blank" aria-hidden="true">{purchase.companyName.slice(0, 1)}</span>
+          <div class="stack is-xs">
+            <p class="eyebrow">Pay hirepin</p>
+            <h1 id="checkout-title" class="checkout-total">{formatCents(total)}</h1>
+          </div>
+        </div>
+
+        <ul class="checkout-lines">
+          <li e:for={line of lines} class="checkout-line">
+            <span class="stack is-xs">
+              <strong>{line.name}</strong>
+              <span class="hint">{line.detail}</span>
+            </span>
+            <span class="checkout-amount">{formatCents(line.amount)}</span>
+          </li>
+          <li class="checkout-line is-total">
+            <span>Total due</span>
+            <span class="checkout-amount">{formatCents(total)}</span>
+          </li>
+        </ul>
+
+        <div class="checkout-pay stack is-sm">
+          <p e:if={state.error} class="error" role="alert">{state.error}</p>
+          <button class={["is-primary is-lg is-block", state.busy && "is-loading"]}
+                  disabled={state.busy}
+                  onclick={() => onPay(purchase, state)}>
+            {state.busy ? "Paying…" : `Pay ${formatCents(total)}`}
+          </button>
+          <a class="button is-ghost is-block" href={`/manage/${purchase.editToken}`}>Cancel</a>
+        </div>
+      </section>
+
+      <p class="checkout-note">
+        No card is charged on this page. It stands in for Stripe while the app runs without a key: Pay records
+        the payment the same way a real one is recorded. Add <code>STRIPE_SECRET_KEY</code> to
+        {" "}<code>config/env/development.env</code> and this button goes to real Stripe Checkout.
+      </p>
+    </main>
+  </body>
+</html>

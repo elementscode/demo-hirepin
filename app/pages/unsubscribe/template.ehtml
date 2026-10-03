@@ -1,0 +1,21 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { Layout } from "#app/shared/templates/layout";
+
+<html lang="en" class="page-unsubscribe" (email: string)>
+  <head>
+    <title>Unsubscribed · hirepin</title>
+    <meta name="robots" content="noindex">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout>
+      <div class="page-shell is-form unsubscribe-page stack is-md">
+        <h1>You're unsubscribed</h1>
+        <p e:if={email} class="lede">{email} won't get the weekly hirepin email any more.</p>
+        <p e:else class="lede">This link has already been used, so there's nothing left to unsubscribe.</p>
+        <p><a class="button is-primary" href="/">Browse jobs</a></p>
+      </div>
+    </Layout>
+  </body>
+</html>

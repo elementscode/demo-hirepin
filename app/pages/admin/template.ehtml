@@ -1,0 +1,170 @@
+import "./style.css";
+import { redirect } from "@elements/app";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { Layout } from "#app/shared/templates/layout";
+import { signout } from "#app/shared/services/auth";
+import { CATEGORY_LABELS, ListingStatus } from "#app/shared/services/listings";
+import { formatCents, formatDate } from "#app/shared/format";
+import { AdminListing, AdminStats, removeListing, restoreListing } from "./services";
+
+type StatusFilter = ListingStatus | "all";
+
+const TABS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "live", label: "Live" },
+  { value: "draft", label: "Drafts" },
+  { value: "expired", label: "Expired" },
+  { value: "removed", label: "Removed" },
+];
+
+interface AdminState {
+  listings: AdminListing[];
+  query: string;
+  status: StatusFilter;
+}
+
+function shown(state: AdminState): AdminListing[] {
+  let q = state.query.trim().toLowerCase();
+
+  return state.listings.filter((l) =>
+    (state.status === "all" || l.status === state.status) &&
+    (!q || `${l.title} ${l.companyName} ${l.employerEmail}`.toLowerCase().includes(q)),
+  );
+}
+
+function countOf(state: AdminState, status: StatusFilter): number {
+  return status === "all" ? state.listings.length : state.listings.filter((l) => l.status === status).length;
+}
+
+function onRemove(state: AdminState, listing: AdminListing) {
+  if (!confirm(`Remove "${listing.title}" at ${listing.companyName}? It comes off the board right away.`)) {
+    return;
+  }
+
+  state.listings = removeListing(listing.id);
+}
+
+function onRestore(state: AdminState, listing: AdminListing) {
+  state.listings = restoreListing(listing.id);
+}
+
+function onSignout() {
+  signout();
+  redirect("/");
+}
+
+<html lang="en" class="page-admin" (
+  initial: AdminListing[],
+  stats: AdminStats,
+  query: string,
+  private state: AdminState = { listings: initial, query, status: "all" as StatusFilter },
+)>
+  <head>
+    <title>Admin · hirepin</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout isAdmin={true}>
+      <div class="page-shell admin-page stack is-xl">
+        <div class="admin-head row">
+          <div class="stack is-xs">
+            <p class="eyebrow">Admin</p>
+            <h1>Listings</h1>
+          </div>
+          <div class="cluster">
+            <button class="is-ghost is-sm" onclick={() => onSignout()}>Sign out</button>
+          </div>
+        </div>
+
+        <div class="admin-stats">
+          <div class="card admin-stat"><div class="card-body">
+            <span class="admin-stat-value">{stats.live}</span>
+            <span class="admin-stat-label">Live listings</span>
+          </div></div>
+          <div class="card admin-stat"><div class="card-body">
+            <span class="admin-stat-value">{stats.featured}</span>
+            <span class="admin-stat-label">Featured</span>
+          </div></div>
+          <div class="card admin-stat"><div class="card-body">
+            <span class="admin-stat-value">{stats.drafts}</span>
+            <span class="admin-stat-label">Unpaid drafts</span>
+          </div></div>
+          <div class="card admin-stat"><div class="card-body">
+            <span class="admin-stat-value">{formatCents(stats.revenueCents)}</span>
+            <span class="admin-stat-label">Revenue</span>
+          </div></div>
+          <div class="card admin-stat"><div class="card-body">
+            <span class="admin-stat-value">{stats.subscribers}</span>
+            <span class="admin-stat-label">Email subscribers</span>
+          </div></div>
+        </div>
+
+        <div class="stack is-md">
+          <div class="admin-toolbar row">
+            <div class="tabs">
+              <div class="tab-list" role="tablist">
+                <button e:for={tab of TABS}
+                        id={`tab-${tab.value}`}
+                        type="button"
+                        role="tab"
+                        class={["tab", state.status === tab.value && "is-active"]}
+                        aria-selected={state.status === tab.value}
+                        onclick={() => state.status = tab.value}>
+                  {tab.label} <span class="hint">{countOf(state, tab.value)}</span>
+                </button>
+              </div>
+            </div>
+            <input type="search" value={state.query} placeholder="Search title, company or email" aria-label="Search listings">
+          </div>
+
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Listing</th>
+                  <th>Status</th>
+                  <th>Category</th>
+                  <th>Published</th>
+                  <th>Expires</th>
+                  <th class="num">Paid</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr e:for={listing of shown(state)} class={[listing.status === "removed" && "is-removed"]}>
+                  <td>
+                    <div class="admin-job">
+                      <a e:if={listing.status === "live"} href={`/jobs/${listing.id}`}>{listing.title}</a>
+                      <strong e:else>{listing.title}</strong>
+                      <span>{listing.companyName} · {listing.employerEmail}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cluster is-xs">
+                      <span class={["pill", listing.status === "live" && "is-success", listing.status === "draft" && "is-warning", listing.status === "removed" && "is-danger"]}>{listing.status}</span>
+                      <span e:if={listing.featured} class="pill is-accent">featured</span>
+                    </div>
+                  </td>
+                  <td>{CATEGORY_LABELS[listing.category]}</td>
+                  <td class="num">{listing.publishedAt ? formatDate(listing.publishedAt) : "–"}</td>
+                  <td class="num">{listing.expiresAt ? formatDate(listing.expiresAt) : "–"}</td>
+                  <td class="num">{listing.paidCents > 0 ? formatCents(listing.paidCents) : "–"}</td>
+                  <td class="actions">
+                    <div class="cluster is-xs" style="justify-content: flex-end">
+                      <a class="button is-ghost is-sm" href={`/manage/${listing.editToken}`} e:if={listing.status !== "removed"}>Edit</a>
+                      <button e:if={listing.status !== "removed"} class="is-sm" onclick={() => onRemove(state, listing)}>Remove</button>
+                      <button e:else class="is-sm" onclick={() => onRestore(state, listing)}>Restore</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr e:if={shown(state).length === 0}>
+                  <td colspan="7" class="hint">No listings match.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>
