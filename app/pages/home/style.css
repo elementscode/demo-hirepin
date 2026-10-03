@@ -1,0 +1,256 @@
+@import "#app/shared/styles/page.css";
+
+.board-hero {
+  padding-block: var(--space-12) var(--space-8);
+}
+
+.board-hero h1 {
+  max-width: 18ch;
+}
+
+.board-hero .display em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.board-count {
+  font-variant-numeric: tabular-nums;
+}
+
+.board-layout {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+  padding-bottom: var(--space-16);
+}
+
+.board-filters {
+  position: sticky;
+  top: 5rem;
+}
+
+.board-filters fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.board-filters legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.filter-option .filter-count {
+  margin-left: auto;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.job-row {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-surface);
+  background: var(--bg);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.job-row:hover {
+  border-color: var(--rule-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.job-row.is-featured {
+  border-color: transparent;
+  background: var(--accent-soft);
+}
+
+.job-row.is-featured:hover {
+  border-color: var(--accent-edge);
+}
+
+.job-row.is-arriving {
+  animation: job-arrive 2.4s ease-out;
+}
+
+@keyframes job-arrive {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+
+  15% {
+    opacity: 1;
+    transform: none;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.job-logo {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--bg-muted);
+}
+
+.job-logo.is-blank {
+  display: grid;
+  place-items: center;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-xl);
+  color: var(--ink-soft);
+}
+
+.job-main {
+  min-width: 0;
+}
+
+.job-title {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+}
+
+.job-company {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.job-tags {
+  margin-top: var(--space-2);
+}
+
+.job-side {
+  text-align: right;
+  display: grid;
+  gap: var(--space-1);
+  justify-items: end;
+}
+
+.job-salary {
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.job-age {
+  font-size: var(--text-xs);
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+
+.board-empty {
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-surface);
+  color: var(--ink-soft);
+}
+
+.subscribe-card .card-body {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.subscribe-card .cluster {
+  gap: var(--space-2) var(--space-4);
+}
+
+@media (max-width: 56rem) {
+  .board-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .board-filters {
+    position: static;
+  }
+
+  .board-hero {
+    padding-block: var(--space-8) var(--space-6);
+  }
+}
+
+@media (max-width: 36rem) {
+  .job-row {
+    grid-template-columns: 2.75rem minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .job-logo {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .job-side {
+    grid-column: 2;
+    text-align: left;
+    justify-items: start;
+    grid-auto-flow: column;
+    justify-content: start;
+    gap: var(--space-3);
+    align-items: baseline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .job-row,
+  .job-row.is-arriving {
+    animation: none;
+    transition: none;
+  }
+}
+
+.board-hero .display {
+  font-size: clamp(var(--text-4xl), 6.5vw, var(--text-6xl));
+}
+
+.only-narrow {
+  display: none;
+}
+
+@media (max-width: 56rem) {
+  .board-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4) var(--space-6);
+  }
+
+  .board-filters > .field {
+    grid-column: 1 / -1;
+  }
+
+  .only-wide {
+    display: none;
+  }
+
+  .only-narrow {
+    display: block;
+  }
+}

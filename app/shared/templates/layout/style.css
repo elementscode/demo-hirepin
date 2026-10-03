@@ -1,0 +1,56 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in oklab, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.site-header-inner {
+  justify-content: space-between;
+  padding-block: var(--space-3);
+}
+
+.site-brand {
+  gap: var(--space-2);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: var(--weight-bold);
+  font-size: var(--text-lg);
+  letter-spacing: -0.02em;
+}
+
+.site-brand svg {
+  display: block;
+  color: var(--accent);
+}
+
+.site-brand-tag {
+  font-weight: var(--weight-normal);
+  font-size: var(--text-sm);
+  color: var(--ink-dim);
+  letter-spacing: 0;
+}
+
+.site-nav {
+  gap: var(--space-2);
+}
+
+.site-footer {
+  border-top: 1px solid var(--rule);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.site-footer-inner {
+  justify-content: space-between;
+  padding-block: var(--space-6);
+}
+
+@media (max-width: 40rem) {
+  .site-brand-tag,
+  .site-nav .is-optional {
+    display: none;
+  }
+}

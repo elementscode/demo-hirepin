@@ -1,0 +1,35 @@
+@import "#app/shared/styles/email.css";
+
+.email .brand {
+  font-weight: 700;
+  font-size: 18px;
+  color: #d9480f;
+  margin-bottom: 24px;
+}
+
+.email .small {
+  font-size: 13px;
+  color: #6b6b6b;
+}
+
+.email .jobs {
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.email .jobs td {
+  padding: 14px 0;
+  border-top: 1px solid #e6e6e6;
+}
+
+.email .jobs .title {
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.email .jobs .meta {
+  font-size: 14px;
+  color: #6b6b6b;
+  margin-top: 4px;
+}

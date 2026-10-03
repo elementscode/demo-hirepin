@@ -1,0 +1,102 @@
+.listing-fields .salary-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.listing-fields .salary-input {
+  position: relative;
+}
+
+.listing-fields .salary-input input {
+  padding-left: 1.6rem;
+  padding-right: 1.8rem;
+}
+
+.listing-fields .salary-input::before,
+.listing-fields .salary-input::after {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-dim);
+  font-size: var(--text-sm);
+  pointer-events: none;
+}
+
+.listing-fields .salary-input::before {
+  content: "$";
+  left: 0.75rem;
+}
+
+.listing-fields .salary-input::after {
+  content: "k";
+  right: 0.75rem;
+}
+
+.listing-fields .logo-row {
+  display: grid;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.listing-fields .logo-preview {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--bg-muted);
+  border: 1px dashed var(--rule-strong);
+}
+
+.listing-fields .description-tabs {
+  margin-bottom: var(--space-2);
+}
+
+.listing-fields textarea {
+  min-height: 18rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+
+.listing-fields .description-preview {
+  min-height: 18rem;
+  padding: var(--space-4);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+}
+
+.listing-fields .description-preview h2 {
+  font-size: var(--text-xl);
+}
+
+.listing-fields .field-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 30rem) {
+  .listing-fields .field-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+.listing-fields input[type="file"] {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.listing-fields input[type="file"]::file-selector-button {
+  margin-right: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  font-weight: var(--weight-medium);
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}

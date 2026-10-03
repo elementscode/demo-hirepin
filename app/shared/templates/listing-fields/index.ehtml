@@ -1,0 +1,166 @@
+import "./style.css";
+import { raw } from "@elements/app";
+import {
+  CATEGORIES,
+  CATEGORY_LABELS,
+  JOB_TYPES,
+  JOB_TYPE_LABELS,
+  ListingForm,
+} from "#app/shared/services/listings";
+import { renderMarkdown } from "#app/shared/markdown";
+
+export type FieldErrors = Record<string, string[] | undefined>;
+
+export const DESCRIPTION_TEMPLATE = `## About the company
+
+A few sentences on what you make and who uses it.
+
+## The role
+
+What this person will own in their first six months.
+
+## What we're looking for
+
+- Experience you need
+- Experience that's a bonus
+
+## Compensation and benefits
+
+- Salary range, equity, and the benefits that matter
+`;
+
+export function blankListingForm(): ListingForm {
+  return {
+    companyName: "",
+    companyUrl: "",
+    title: "",
+    category: "engineering",
+    jobType: "full-time",
+    location: "Remote, worldwide",
+    salaryMin: 0,
+    salaryMax: 0,
+    description: DESCRIPTION_TEMPLATE,
+    applyUrl: "",
+    employerEmail: "",
+    logo: null,
+  };
+}
+
+/**
+ * The listing's fields, shared by the post page and the employer's manage
+ * page. The caller owns the <form> and the submit.
+ */
+<ListingFields (
+  form: ListingForm,
+  errors: FieldErrors,
+  logoUrl: string | null = null,
+  showEmail: boolean = true,
+  private tab: { preview: boolean } = { preview: false },
+)>
+  <div class="listing-fields stack is-lg">
+    <section class="stack is-md">
+      <h2 class="eyebrow">Company</h2>
+
+      <div class="field">
+        <label for="companyName">Company name</label>
+        <input id="companyName" value={form.companyName} autocomplete="organization" class={[errors.companyName && "is-error"]} required>
+        <p e:if={errors.companyName} class="error">{errors.companyName![0]}</p>
+      </div>
+
+      <div class="field">
+        <label for="companyUrl">Company website <span class="hint">optional</span></label>
+        <input id="companyUrl" type="url" value={form.companyUrl} placeholder="https://" class={[errors.companyUrl && "is-error"]}>
+        <p e:if={errors.companyUrl} class="error">{errors.companyUrl![0]}</p>
+      </div>
+
+      <div class="field">
+        <label for="logo">Logo <span class="hint">optional, square works best</span></label>
+        <div class="logo-row">
+          <img e:if={logoUrl} class="logo-preview" src={logoUrl!} alt="Current logo" width="56" height="56">
+          <span e:else class="logo-preview" aria-hidden="true"></span>
+          <input id="logo" type="file" accept="image/png,image/jpeg,image/gif,image/webp" value={form.logo}>
+        </div>
+        <p e:if={errors.logo} class="error">{errors.logo![0]}</p>
+      </div>
+    </section>
+
+    <section class="stack is-md">
+      <h2 class="eyebrow">The job</h2>
+
+      <div class="field">
+        <label for="title">Job title</label>
+        <input id="title" value={form.title} placeholder="Senior Frontend Engineer" class={[errors.title && "is-error"]} required>
+        <p e:if={errors.title} class="error">{errors.title![0]}</p>
+      </div>
+
+      <div class="field-pair">
+        <div class="field">
+          <label for="category">Category</label>
+          <select id="category" value={form.category}>
+            <option e:for={cat of CATEGORIES} value={cat}>{CATEGORY_LABELS[cat]}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="jobType">Job type</label>
+          <select id="jobType" value={form.jobType}>
+            <option e:for={type of JOB_TYPES} value={type}>{JOB_TYPE_LABELS[type]}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="location">Where can they work from?</label>
+        <input id="location" value={form.location} placeholder="Remote, US time zones" class={[errors.location && "is-error"]} required>
+        <p e:if={errors.location} class="error">{errors.location![0]}</p>
+      </div>
+
+      <div class="field">
+        <label for="salaryMin">Salary range, USD per year</label>
+        <div class="salary-row">
+          <span class="salary-input">
+            <input id="salaryMin" type="number" min="1" step="1" inputmode="numeric" value={form.salaryMin} aria-label="Minimum salary in thousands" class={[errors.salaryMin && "is-error"]}>
+          </span>
+          <span class="hint">to</span>
+          <span class="salary-input">
+            <input type="number" min="1" step="1" inputmode="numeric" value={form.salaryMax} aria-label="Maximum salary in thousands" class={[errors.salaryMin && "is-error"]}>
+          </span>
+        </div>
+        <p e:if={errors.salaryMin} class="error">{errors.salaryMin![0]}</p>
+        <p e:else class="hint">In thousands: 120 to 150 shows as $120k – $150k.</p>
+      </div>
+
+      <div class="field">
+        <div class="head">
+          <label for="description">Description</label>
+          <div class="button-group description-tabs">
+            <button type="button" class={["is-sm", !tab.preview && "is-primary"]} onclick={() => tab.preview = false}>Write</button>
+            <button type="button" class={["is-sm", tab.preview && "is-primary"]} onclick={() => tab.preview = true}>Preview</button>
+          </div>
+        </div>
+        <textarea e:if={!tab.preview} id="description" value={form.description} class={[errors.description && "is-error"]} rows="16"></textarea>
+        <div e:else class="description-preview prose">{raw(renderMarkdown(form.description))}</div>
+        <p e:if={errors.description} class="error">{errors.description![0]}</p>
+        <p e:else class="hint">Markdown: ## headings, **bold**, - lists and [links](https://…).</p>
+      </div>
+
+      <div class="field">
+        <label for="applyUrl">Apply url</label>
+        <input id="applyUrl" value={form.applyUrl} placeholder="https://yourcompany.com/careers/role" class={[errors.applyUrl && "is-error"]} required>
+        <p e:if={errors.applyUrl} class="error">{errors.applyUrl![0]}</p>
+        <p e:else class="hint">Where the Apply button goes: your careers page, an ATS link, or mailto:jobs@….</p>
+      </div>
+    </section>
+
+    <section e:if={showEmail} class="stack is-md">
+      <h2 class="eyebrow">You</h2>
+
+      <div class="field">
+        <label for="employerEmail">Your email</label>
+        <input id="employerEmail" type="email" value={form.employerEmail} autocomplete="email" autocapitalize="none" spellcheck={false} placeholder="you@company.com" class={[errors.employerEmail && "is-error"]} required>
+        <p e:if={errors.employerEmail} class="error">{errors.employerEmail![0]}</p>
+        <p e:else class="hint">No account needed. We email you a private link to edit the listing, and your receipt.</p>
+      </div>
+    </section>
+  </div>
+</ListingFields>

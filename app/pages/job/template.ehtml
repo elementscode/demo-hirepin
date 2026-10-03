@@ -1,0 +1,76 @@
+import "./style.css";
+import { raw } from "@elements/app";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { Layout } from "#app/shared/templates/layout";
+import { CATEGORY_LABELS, JOB_TYPE_LABELS, Listing } from "#app/shared/services/listings";
+import { formatDate, formatSalary } from "#app/shared/format";
+
+function hostOf(url: string): string {
+  return url.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+}
+
+<html lang="en" class="page-job" (listing: Listing, body: string, isAdmin: boolean)>
+  <head>
+    <title>{listing.title} at {listing.companyName} · hirepin</title>
+    <meta name="description" content={`${listing.title} at ${listing.companyName}. ${listing.location}, ${formatSalary(listing.salaryMin, listing.salaryMax)}.`}>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout {isAdmin}>
+      <div class="page-shell job-page stack is-lg">
+        <a class="job-back link-muted" href="/">← All jobs</a>
+
+        <div class="job-layout">
+          <article class="stack is-xl">
+            <header class="job-head">
+              <img e:if={listing.logoUrl} class="job-head-logo" src={listing.logoUrl!} alt={`${listing.companyName} logo`} width="72" height="72">
+              <span e:else class="job-head-logo is-blank" aria-hidden="true">{listing.companyName.slice(0, 1)}</span>
+
+              <div class="stack is-xs">
+                <h1>{listing.title}</h1>
+                <div class="job-head-company">{listing.companyName} · {listing.location}</div>
+                <div class="cluster is-xs">
+                  <span e:if={listing.featured} class="pill is-accent">Featured</span>
+                  <span class="pill">{CATEGORY_LABELS[listing.category]}</span>
+                  <span class="pill">{JOB_TYPE_LABELS[listing.jobType]}</span>
+                </div>
+              </div>
+            </header>
+
+            <div class="prose">{raw(body)}</div>
+
+            <div class="job-apply-foot cluster">
+              <a class="button is-primary is-lg" href={listing.applyUrl} target="_blank" rel="noopener nofollow">
+                Apply for this job
+              </a>
+              <span class="hint">Opens {listing.companyName}'s application page.</span>
+            </div>
+          </article>
+
+          <aside class="job-aside card">
+            <div class="card-body stack is-md">
+              <a class="button is-primary is-block" href={listing.applyUrl} target="_blank" rel="noopener nofollow">Apply now</a>
+
+              <dl class="job-facts">
+                <dt>Salary</dt>
+                <dd>{formatSalary(listing.salaryMin, listing.salaryMax)}</dd>
+                <dt>Location</dt>
+                <dd>{listing.location}</dd>
+                <dt>Type</dt>
+                <dd>{JOB_TYPE_LABELS[listing.jobType]}</dd>
+                <dt>Posted</dt>
+                <dd>{listing.publishedAt ? formatDate(listing.publishedAt) : ""}</dd>
+                <dt e:if={listing.companyUrl}>Website</dt>
+                <dd e:if={listing.companyUrl}>
+                  <a href={listing.companyUrl} target="_blank" rel="noopener nofollow">{hostOf(listing.companyUrl)}</a>
+                </dd>
+              </dl>
+
+              <a e:if={isAdmin} class="button is-ghost is-sm is-block" href={`/admin?q=${encodeURIComponent(listing.title)}`}>Review in admin</a>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>

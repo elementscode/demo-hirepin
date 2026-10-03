@@ -1,0 +1,86 @@
+import "./style.css";
+import { formatDate, formatCents } from "#app/shared/format";
+import type { ListingEmailKind } from "#app/shared/services/listings";
+
+
+export interface ListingEmailData {
+  kind: ListingEmailKind;
+  title: string;
+  companyName: string;
+  editToken: string;
+  listingId: string;
+  expiresAt: Date | null;
+  amountCents: number;
+}
+
+/**
+ * Every email an employer gets about their listing. Each one carries the
+ * private edit link, since that link is the only way back in.
+ *
+ * @email
+ */
+<html (data: ListingEmailData)>
+  <body class="email listing">
+    <div class="email-wrap">
+      <p class="brand">hirepin</p>
+
+      <div e:switch={data.kind}>
+        <div e:case="draft">
+          <h1>Your listing is saved</h1>
+          <p>
+            <strong>{data.title}</strong> at {data.companyName} is saved as a draft. It goes on
+            the board once it is paid for: $99 publishes it for 30 days.
+          </p>
+        </div>
+
+        <div e:case="live">
+          <h1>Your listing is live</h1>
+          <p>
+            <strong>{data.title}</strong> at {data.companyName} is on the board now
+            <span e:if={data.expiresAt}> and stays up until {formatDate(data.expiresAt!)}</span>.
+          </p>
+          <p e:if={data.amountCents > 0}>We received your payment of {formatCents(data.amountCents)}. Thank you.</p>
+          <p><a href={`/jobs/${data.listingId}`}>See it on the board</a></p>
+        </div>
+
+        <div e:case="featured">
+          <h1>Your listing is featured</h1>
+          <p>
+            <strong>{data.title}</strong> is now pinned to the top of the board
+            <span e:if={data.expiresAt}> until {formatDate(data.expiresAt!)}</span>.
+          </p>
+          <p e:if={data.amountCents > 0}>We received your payment of {formatCents(data.amountCents)}. Thank you.</p>
+        </div>
+
+        <div e:case="reminder">
+          <h1>Your listing expires soon</h1>
+          <p>
+            <strong>{data.title}</strong> at {data.companyName} comes off the board on
+            {" "}{data.expiresAt ? formatDate(data.expiresAt) : "soon"}. Once it expires you can renew it
+            for another 30 days from the same link.
+          </p>
+        </div>
+
+        <div e:case="expired">
+          <h1>Your listing has expired</h1>
+          <p>
+            <strong>{data.title}</strong> at {data.companyName} is off the board. Renew it
+            for another 30 days whenever you're ready.
+          </p>
+        </div>
+      </div>
+
+      <p class="action">
+        <a class="button" href={`/manage/${data.editToken}`}>Manage your listing</a>
+      </p>
+
+      <p class="small">
+        This link is private: anyone who has it can edit the listing, so keep it to yourself.
+      </p>
+
+      <div class="email-footer">
+        <p>hirepin, remote software jobs</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+import "./style.css";
+import { formatCents } from "#app/shared/format";
+import config from "#config";
+
+<Layout (isAdmin: boolean = false)>
+  <div class="app">
+    <header class="site-header">
+      <div class="page-shell site-header-inner row">
+        <a href="/" class="site-brand row">
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7z" fill="currentColor"/>
+            <circle cx="12" cy="9" r="2.6" fill="var(--bg)"/>
+          </svg>
+          hirepin
+          <span class="site-brand-tag">remote software jobs</span>
+        </a>
+
+        <nav class="site-nav row">
+          <a e:if={isAdmin} href="/admin" class="button is-ghost is-sm">Admin</a>
+          <a href="/" class="button is-ghost is-sm is-optional">Browse jobs</a>
+          <a href="/post" class="button is-primary is-sm">Post a job · {formatCents(config.hirepin.publishCents)}</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <slot/>
+    </main>
+
+    <footer class="site-footer">
+      <div class="page-shell site-footer-inner cluster">
+        <span>hirepin · remote jobs in engineering, design, product and marketing</span>
+        <nav class="cluster">
+          <a class="link-muted" href="/post">Post a job</a>
+          <a class="link-muted" href="/signin">Admin sign in</a>
+        </nav>
+      </div>
+    </footer>
+  </div>
+</Layout>

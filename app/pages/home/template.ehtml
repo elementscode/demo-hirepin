@@ -1,0 +1,233 @@
+import "./style.css";
+import { LiveView, ValidationError } from "@elements/app";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+import { Layout } from "#app/shared/templates/layout";
+import {
+  BoardListing,
+  CATEGORIES,
+  CATEGORY_LABELS,
+  Category,
+  JOB_TYPES,
+  JOB_TYPE_LABELS,
+  JobType,
+} from "#app/shared/services/listings";
+import { SubscribeForm, subscribe } from "#app/shared/services/subscribers";
+import { formatSalary, timeAgo } from "#app/shared/format";
+
+interface Filters {
+  text: string;
+  categories: Category[];
+  jobTypes: JobType[];
+  minSalary: string;
+}
+
+const SALARY_STEPS = [80, 100, 120, 150, 180];
+const DAY = 24 * 60 * 60 * 1000;
+
+function matches(job: BoardListing, f: Filters): boolean {
+  let text = f.text.trim().toLowerCase();
+
+  if (text && !`${job.title} ${job.companyName} ${job.location}`.toLowerCase().includes(text)) {
+    return false;
+  }
+
+  if (f.categories.length > 0 && !f.categories.includes(job.category)) {
+    return false;
+  }
+
+  if (f.jobTypes.length > 0 && !f.jobTypes.includes(job.jobType)) {
+    return false;
+  }
+
+  let min = Number(f.minSalary) * 1000;
+
+  return !(min > 0 && job.salaryMax < min);
+}
+
+/** Featured listings pinned first, then newest first. */
+function visible(listings: LiveView<BoardListing>, f: Filters): BoardListing[] {
+  return listings
+    .filter((job) => matches(job, f))
+    .sort((a, b) => Number(b.featured) - Number(a.featured) || +b.publishedAt - +a.publishedAt);
+}
+
+function countIn(listings: LiveView<BoardListing>, category: Category): number {
+  return listings.filter((job) => job.category === category).length;
+}
+
+function clearFilters(f: Filters) {
+  f.text = "";
+  f.categories = [];
+  f.jobTypes = [];
+  f.minSalary = "0";
+}
+
+function hasFilters(f: Filters): boolean {
+  return f.text !== "" || f.categories.length > 0 || f.jobTypes.length > 0 || f.minSalary !== "0";
+}
+
+<html lang="en" class="page-home" (
+  listings: LiveView<BoardListing>,
+  isAdmin: boolean,
+  private filters: Filters = { text: "", categories: [], jobTypes: [], minSalary: "0" },
+  private openedAt: number = Date.now(),
+)>
+  <head>
+    <title>hirepin · remote software jobs</title>
+    <meta name="description" content="Remote jobs in engineering, design, product and marketing.">
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <Layout {isAdmin}>
+      <div class="page-shell">
+        <section class="board-hero stack is-md">
+          <p class="eyebrow"><span class="board-count">{listings.length}</span> live remote jobs</p>
+          <h1 class="display">Remote software jobs, <em>pinned</em> fresh every day.</h1>
+          <p class="lede">
+            Engineering, design, product and marketing roles at companies that hire
+            anywhere. Every listing shows its salary.
+          </p>
+        </section>
+
+        <div class="board-layout">
+          <aside class="board-filters stack is-lg" aria-label="Filters">
+            <div class="field">
+              <label for="q">Search</label>
+              <input id="q" type="search" value={filters.text} placeholder="Title, company or location" autocomplete="off">
+            </div>
+
+            <fieldset class="stack is-sm">
+              <legend>Category</legend>
+              <label e:for={cat of CATEGORIES} class="filter-option">
+                <input type="checkbox" group={filters.categories} value={cat}>
+                {CATEGORY_LABELS[cat]}
+                <span class="filter-count">{countIn(listings, cat)}</span>
+              </label>
+            </fieldset>
+
+            <fieldset class="stack is-sm">
+              <legend>Job type</legend>
+              <label e:for={type of JOB_TYPES} class="filter-option">
+                <input type="checkbox" group={filters.jobTypes} value={type}>
+                {JOB_TYPE_LABELS[type]}
+              </label>
+            </fieldset>
+
+            <div class="field">
+              <label for="salary">Salary</label>
+              <select id="salary" value={filters.minSalary}>
+                <option value="0">Any salary</option>
+                <option e:for={step of SALARY_STEPS} value={String(step)}>${step}k or more</option>
+              </select>
+            </div>
+
+            <div class="only-wide"><SubscribeCard /></div>
+          </aside>
+
+          <section class="stack is-md" aria-label="Jobs">
+            <ul class="board-list stack is-sm">
+              <li e:for={job of visible(listings, filters)}>
+                <JobRow {job} arriving={+job.publishedAt > openedAt} />
+              </li>
+            </ul>
+
+            <div e:if={visible(listings, filters).length === 0} class="board-empty stack is-sm">
+              <p>No jobs match those filters.</p>
+              <p><button class="is-sm" onclick={() => clearFilters(filters)}>Clear filters</button></p>
+            </div>
+
+            <p e:elseif={hasFilters(filters)} class="hint">
+              Showing {visible(listings, filters).length} of {listings.length} jobs.
+              {" "}<a href="#" onclick={() => clearFilters(filters)}>Clear filters</a>
+            </p>
+
+            <div class="only-narrow"><SubscribeCard /></div>
+          </section>
+        </div>
+      </div>
+    </Layout>
+  </body>
+</html>
+
+<JobRow (job: BoardListing, arriving: boolean)>
+  <a href={`/jobs/${job.id}`} class={["job-row", job.featured && "is-featured", arriving && "is-arriving"]}>
+    <img e:if={job.logoUrl} class="job-logo" src={job.logoUrl!} alt="" width="56" height="56" loading="lazy">
+    <span e:else class="job-logo is-blank" aria-hidden="true">{job.companyName.slice(0, 1)}</span>
+
+    <div class="job-main">
+      <h2 class="job-title">{job.title}</h2>
+      <div class="job-company">{job.companyName} · {job.location}</div>
+      <div class="job-tags cluster is-xs">
+        <span e:if={job.featured} class="pill is-accent">Featured</span>
+        <span e:if={Date.now() - +job.publishedAt < 2 * DAY} class="pill is-success">New</span>
+        <span class="pill">{CATEGORY_LABELS[job.category]}</span>
+        <span class="pill">{JOB_TYPE_LABELS[job.jobType]}</span>
+      </div>
+    </div>
+
+    <div class="job-side">
+      <span class="job-salary">{formatSalary(job.salaryMin, job.salaryMax)}</span>
+      <span class="job-age">{timeAgo(job.publishedAt)}</span>
+    </div>
+  </a>
+</JobRow>
+
+interface SubscribeState {
+  form: SubscribeForm;
+  errors: Record<string, string[]>;
+  done: boolean;
+}
+
+function onSubscribe(state: SubscribeState) {
+  try {
+    subscribe(state.form);
+    state.errors = {};
+    state.done = true;
+  } catch (err: any) {
+    if (err instanceof ValidationError) {
+      state.errors = err.errors as Record<string, string[]>;
+      return;
+    }
+
+    throw err;
+  }
+}
+
+<SubscribeCard (
+  private state: SubscribeState = { form: { email: "", categories: ["engineering" as Category] }, errors: {}, done: false },
+)>
+  <div class="card subscribe-card">
+    <div class="card-body">
+      <div e:if={state.done} class="stack is-xs">
+        <strong>You're subscribed.</strong>
+        <p class="hint">New jobs in your categories arrive every Monday. Every email has a one-click unsubscribe.</p>
+      </div>
+
+      <form e:else class="stack is-sm" onsubmit={() => onSubscribe(state)}>
+        <div class="stack is-xs">
+          <strong>Get new jobs weekly</strong>
+          <p class="hint">One email every Monday, only the categories you pick.</p>
+        </div>
+
+        <div class="cluster">
+          <label e:for={cat of CATEGORIES} class="filter-option">
+            <input type="checkbox" group={state.form.categories} value={cat}>
+            {CATEGORY_LABELS[cat]}
+          </label>
+        </div>
+        <p e:if={state.errors.categories} class="error">{state.errors.categories?.[0]}</p>
+
+        <input type="email"
+               value={state.form.email}
+               placeholder="you@example.com"
+               autocomplete="email"
+               aria-label="Email"
+               class={[state.errors.email && "is-error"]}
+               required>
+        <p e:if={state.errors.email} class="error">{state.errors.email?.[0]}</p>
+
+        <button type="submit" class="is-primary is-block">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</SubscribeCard>
