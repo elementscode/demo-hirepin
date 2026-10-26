@@ -1,39 +1,12 @@
-![Hirepin, a remote software job board built with Elements: featured listings pinned at the top with company logos, salary ranges, category and job type tags, beside search and category, job type and salary filters.](https://elements.dev/demos/01a0f449-6972-792e-9f0f-a81e57ada225/poster?v=588f9456632d)
+![A job board with paid listings, built by Claude Code on Elements: featured listings pinned at the top with company logos, salary ranges, category and job type tags, beside search and category, job type and salary filters.](https://elements.dev/demos/01a0f449-6972-792e-9f0f-a81e57ada225/poster?v=588f9456632d)
 
-# Hirepin
+# A job board with paid listings, built by Claude Code on Elements
 
-> A demo app built with [Elements](https://elements.dev).
+> Hirepin is a full-stack app built with Claude Code on Elements.
 
 Remote jobs filtered by category, type and salary, a weekly new-jobs email, and $99 listings paid by card, $50 more to feature.
 
-**Demo:** [Hirepin](https://elements.dev/demos/01a0f449-6972-792e-9f0f-a81e57ada225)
-
-## Agent specs
-
-- **Agent:** Claude Code, Opus 5.5 Medium
-- **Time:** 25 min
-- **Cost:** $7.82 at API rates, September 2026
-
-## Get started
-
-```bash
-elements create hirepin -scaffold=elementscode/demo-hirepin
-```
-
-## Seed data and demo account
-
-The demo seed fills the board with 25 live listings from 22 made-up
-companies, each with a drawn logo, four of them featured. It also adds one
-unpaid draft, one expired listing, a payment for every published listing, and
-seven weekly email subscribers.
-
-Employers don't have accounts: each listing has a private edit link at
-`/manage/<token>`, and the admin's Edit button opens it. The one account is the
-admin, shown on the sign-in page:
-
-| Email             | Password        | Role  |
-| ----------------- | --------------- | ----- |
-| admin@hirepin.dev | `hirepin-admin` | admin |
+[Run this app on your machine](https://elements.dev/demos/01a0f449-6972-792e-9f0f-a81e57ada225). Use this demo as inspiration, or as the starting point for your own app. Your agent creates a new app with this one as the scaffold, and you prompt it to add whatever features you want.
 
 ## Payments
 
@@ -56,8 +29,6 @@ registers its own Stripe webhook and keeps the signing secret.
 
 Hirepin needed a board that fills in as listings are paid for, employers who post and edit from an emailed link, card payments for publishing and featuring, expiry reminders and a weekly email. Each of those is a part of Elements, so the agent spent its 25 minutes on the job board itself.
 
-### What Elements gave the app
-
 - **A live board.** Listings are a LiveTable, so a job appears on every open board the moment its payment lands, and the search, category, job type and salary filters run in the page over that live list.
 
 - **Posting without an account.** The post form sends the fields and the logo to the server in one `@rpc` call, saves a draft and emails the employer a private link for editing and paying later.
@@ -70,16 +41,6 @@ Hirepin needed a board that fills in as listings are paid for, employers who pos
 
 - **Sessions and roles.** The admin's review and remove pages and their server calls share one guard on the admin role.
 
-### What the project server gave the agent
+## Why Elements
 
-The project server runs alongside the agent and answers as soon as a file is saved: it type-checks the templates, TypeScript and SQL, applies migrations and reruns the tests, so every question came back right away and the agent kept building.
-
-### What shipped
-
-The app type-checks with zero errors and all 26 tests pass. Every page works on desktop and phone. A real sandbox payment went through Stripe end to end.
-
-**Demo:** [Hirepin](https://elements.dev/demos/01a0f449-6972-792e-9f0f-a81e57ada225)
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+Elements is an integrated full-stack app framework and a project server. The project server checks the agent's work as it builds: it type-checks the server and browser code, analyzes the program, applies migrations and runs the tests, then reports the results to the agent. A security mistake, such as calling a server-only function from the browser, is a compile error. The agent reads the report and fixes its own mistakes before it tells you a feature is done. The same checks run on every feature you ask for next.
