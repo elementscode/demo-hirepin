@@ -13,6 +13,16 @@ import {
 } from "#app/shared/services/listings";
 import { SubscribeForm, subscribe } from "#app/shared/services/subscribers";
 import { formatSalary, timeAgo } from "#app/shared/format";
+import { Avatar } from "@elements/ui/avatar";
+import { Badge } from "@elements/ui/badge";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent } from "@elements/ui/card";
+import { Checkbox, CheckboxGroup } from "@elements/ui/checkbox";
+import { Empty, EmptyContent } from "@elements/ui/empty";
+import { Field, FieldSet, FieldLegend } from "@elements/ui/field";
+import { Input } from "@elements/ui/input";
+import { Label } from "@elements/ui/label";
+import { NativeSelect } from "@elements/ui/native-select";
 
 interface Filters {
   text: string;
@@ -91,35 +101,37 @@ function hasFilters(f: Filters): boolean {
 
         <div class="board-layout">
           <aside class="board-filters stack is-lg" aria-label="Filters">
-            <div class="field">
-              <label for="q">Search</label>
-              <input id="q" type="search" value={filters.text} placeholder="Title, company or location" autocomplete="off">
-            </div>
+            <Field label="Search" reserveError={false}>
+              <Input type="search" value={filters.text} placeholder="Title, company or location" attrs={{ autocomplete: "off" }} />
+            </Field>
 
-            <fieldset class="stack is-sm">
-              <legend>Category</legend>
-              <label e:for={cat of CATEGORIES} class="filter-option">
-                <input type="checkbox" group={filters.categories} value={cat}>
-                {CATEGORY_LABELS[cat]}
-                <span class="filter-count">{countIn(listings, cat)}</span>
-              </label>
-            </fieldset>
+            <FieldSet>
+              <FieldLegend variant="label">Category</FieldLegend>
+              <CheckboxGroup value={filters.categories}>
+                <Label e:for={cat of CATEGORIES} class="filter-option">
+                  <Checkbox value={cat} />
+                  {CATEGORY_LABELS[cat]}
+                  <span class="filter-count">{countIn(listings, cat)}</span>
+                </Label>
+              </CheckboxGroup>
+            </FieldSet>
 
-            <fieldset class="stack is-sm">
-              <legend>Job type</legend>
-              <label e:for={type of JOB_TYPES} class="filter-option">
-                <input type="checkbox" group={filters.jobTypes} value={type}>
-                {JOB_TYPE_LABELS[type]}
-              </label>
-            </fieldset>
+            <FieldSet>
+              <FieldLegend variant="label">Job type</FieldLegend>
+              <CheckboxGroup value={filters.jobTypes}>
+                <Label e:for={type of JOB_TYPES} class="filter-option">
+                  <Checkbox value={type} />
+                  {JOB_TYPE_LABELS[type]}
+                </Label>
+              </CheckboxGroup>
+            </FieldSet>
 
-            <div class="field">
-              <label for="salary">Salary</label>
-              <select id="salary" value={filters.minSalary}>
+            <Field label="Salary" reserveError={false}>
+              <NativeSelect value={filters.minSalary} block>
                 <option value="0">Any salary</option>
                 <option e:for={step of SALARY_STEPS} value={String(step)}>${step}k or more</option>
-              </select>
-            </div>
+              </NativeSelect>
+            </Field>
 
             <div class="only-wide"><SubscribeCard /></div>
           </aside>
@@ -131,10 +143,11 @@ function hasFilters(f: Filters): boolean {
               </li>
             </ul>
 
-            <div e:if={visible(listings, filters).length === 0} class="board-empty stack is-sm">
-              <p>No jobs match those filters.</p>
-              <p><button class="is-sm" onclick={() => clearFilters(filters)}>Clear filters</button></p>
-            </div>
+            <Empty e:if={visible(listings, filters).length === 0} variant="outline" title="No jobs match those filters.">
+              <EmptyContent>
+                <Button size="sm" onclick={() => clearFilters(filters)}>Clear filters</Button>
+              </EmptyContent>
+            </Empty>
 
             <p e:elseif={hasFilters(filters)} class="hint">
               Showing {visible(listings, filters).length} of {listings.length} jobs.
@@ -151,17 +164,16 @@ function hasFilters(f: Filters): boolean {
 
 <JobRow (job: BoardListing, arriving: boolean)>
   <a href={`/jobs/${job.id}`} class={["job-row", job.featured && "is-featured", arriving && "is-arriving"]}>
-    <img e:if={job.logoUrl} class="job-logo" src={job.logoUrl!} alt="" width="56" height="56" loading="lazy">
-    <span e:else class="job-logo is-blank" aria-hidden="true">{job.companyName.slice(0, 1)}</span>
+    <Avatar class="job-logo" shape="square" src={job.logoUrl ?? ""} fallback={job.companyName.slice(0, 1)} lazy />
 
     <div class="job-main">
       <h2 class="job-title">{job.title}</h2>
       <div class="job-company">{job.companyName} · {job.location}</div>
       <div class="job-tags cluster is-xs">
-        <span e:if={job.featured} class="pill is-accent">Featured</span>
-        <span e:if={Date.now() - +job.publishedAt < 2 * DAY} class="pill is-success">New</span>
-        <span class="pill">{CATEGORY_LABELS[job.category]}</span>
-        <span class="pill">{JOB_TYPE_LABELS[job.jobType]}</span>
+        <Badge e:if={job.featured} variant="accent">Featured</Badge>
+        <Badge e:if={Date.now() - +job.publishedAt < 2 * DAY} variant="success">New</Badge>
+        <Badge variant="outline">{CATEGORY_LABELS[job.category]}</Badge>
+        <Badge variant="outline">{JOB_TYPE_LABELS[job.jobType]}</Badge>
       </div>
     </div>
 
@@ -196,8 +208,8 @@ function onSubscribe(state: SubscribeState) {
 <SubscribeCard (
   private state: SubscribeState = { form: { email: "", categories: ["engineering" as Category] }, errors: {}, done: false },
 )>
-  <div class="card subscribe-card">
-    <div class="card-body">
+  <Card class="subscribe-card">
+    <CardContent>
       <div e:if={state.done} class="stack is-xs">
         <strong>You're subscribed.</strong>
         <p class="hint">New jobs in your categories arrive every Monday. Every email has a one-click unsubscribe.</p>
@@ -209,25 +221,24 @@ function onSubscribe(state: SubscribeState) {
           <p class="hint">One email every Monday, only the categories you pick.</p>
         </div>
 
-        <div class="cluster">
-          <label e:for={cat of CATEGORIES} class="filter-option">
-            <input type="checkbox" group={state.form.categories} value={cat}>
+        <CheckboxGroup value={state.form.categories} class="subscribe-categories">
+          <Label e:for={cat of CATEGORIES} class="filter-option">
+            <Checkbox value={cat} />
             {CATEGORY_LABELS[cat]}
-          </label>
-        </div>
+          </Label>
+        </CheckboxGroup>
         <p e:if={state.errors.categories} class="error">{state.errors.categories?.[0]}</p>
 
-        <input type="email"
-               value={state.form.email}
-               placeholder="you@example.com"
-               autocomplete="email"
-               aria-label="Email"
-               class={[state.errors.email && "is-error"]}
-               required>
-        <p e:if={state.errors.email} class="error">{state.errors.email?.[0]}</p>
+        <Field error={state.errors.email?.[0] ?? ""} reserveError={false}>
+          <Input type="email"
+                 value={state.form.email}
+                 placeholder="you@example.com"
+                 required
+                 attrs={{ autocomplete: "email", "aria-label": "Email" }} />
+        </Field>
 
-        <button type="submit" class="is-primary is-block">Subscribe</button>
+        <Button type="submit" variant="primary" block>Subscribe</Button>
       </form>
-    </div>
-  </div>
+    </CardContent>
+  </Card>
 </SubscribeCard>

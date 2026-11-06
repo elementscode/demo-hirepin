@@ -1,6 +1,7 @@
 import "./style.css";
 import { formatCents } from "#app/shared/format";
 import config from "#config";
+import { Button } from "@elements/ui/button";
 
 <Layout (isAdmin: boolean = false)>
   <div class="app">
@@ -16,9 +17,9 @@ import config from "#config";
         </a>
 
         <nav class="site-nav row">
-          <a e:if={isAdmin} href="/admin" class="button is-ghost is-sm">Admin</a>
-          <a href="/" class="button is-ghost is-sm is-optional">Browse jobs</a>
-          <a href="/post" class="button is-primary is-sm">Post a job · {formatCents(config.hirepin.publishCents)}</a>
+          <Button e:if={isAdmin} href="/admin" variant="ghost" size="sm">Admin</Button>
+          <Button href="/" variant="ghost" size="sm" class="is-optional">Browse jobs</Button>
+          <Button href="/post" variant="primary" size="sm">Post a job · {formatCents(config.hirepin.publishCents)}</Button>
         </nav>
       </div>
     </header>
