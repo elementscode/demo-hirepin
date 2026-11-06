@@ -38,7 +38,7 @@ function formFor(listing: Listing): ListingForm {
     description: listing.description,
     applyUrl: listing.applyUrl,
     employerEmail: listing.employerEmail,
-    logo: null,
+    logo: [],
   };
 }
 

@@ -18,7 +18,7 @@ function formFrom(token: string): ListingForm {
     description: l.description,
     applyUrl: l.applyUrl,
     employerEmail: l.employerEmail,
-    logo: null,
+    logo: [],
   };
 }
 

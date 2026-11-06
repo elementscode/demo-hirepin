@@ -17,7 +17,7 @@ function goodForm(): ListingForm {
     description: "We are hiring a backend engineer to own our ingest pipeline end to end.",
     applyUrl: "https://testco.example/apply",
     employerEmail: "Jobs@Testco.example",
-    logo: null,
+    logo: [],
   };
 }
 

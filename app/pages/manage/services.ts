@@ -17,7 +17,7 @@ export function updateListing(token: string, form: ListingForm): Listing {
   validateListing(form);
 
   tx(() => {
-    let logoId = form.logo ? saveLogo(form.logo) : null;
+    let logoId = form.logo.length > 0 ? saveLogo(form.logo[0]) : null;
 
     sql(`
       update listings

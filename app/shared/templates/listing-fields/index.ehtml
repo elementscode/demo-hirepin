@@ -11,7 +11,9 @@ import { renderMarkdown } from "#app/shared/markdown";
 import { Avatar } from "@elements/ui/avatar";
 import { Field, FieldLabel } from "@elements/ui/field";
 import { Input } from "@elements/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupText } from "@elements/ui/input-group";
 import { NativeSelect } from "@elements/ui/native-select";
+import { NumberInput } from "@elements/ui/number-input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@elements/ui/tabs";
 import { Textarea } from "@elements/ui/textarea";
 
@@ -48,7 +50,7 @@ export function blankListingForm(): ListingForm {
     description: DESCRIPTION_TEMPLATE,
     applyUrl: "",
     employerEmail: "",
-    logo: null,
+    logo: [],
   };
 }
 
@@ -84,7 +86,7 @@ function first(messages: string[] | undefined): string {
         <FieldLabel>Logo <span class="hint">optional, square works best</span></FieldLabel>
         <div class="logo-row">
           <Avatar class="logo-preview" shape="square" src={logoUrl ?? ""} alt={logoUrl ? "Current logo" : ""} fallback=" " />
-          <input id="logo" type="file" accept="image/png,image/jpeg,image/gif,image/webp" value={form.logo}>
+          <Input type="file" files={form.logo} attrs={{ id: "logo", accept: "image/png,image/jpeg,image/gif,image/webp" }} />
         </div>
       </Field>
     </section>
@@ -116,13 +118,17 @@ function first(messages: string[] | undefined): string {
 
       <Field label="Salary range, USD per year" error={first(errors.salaryMin)} description="In thousands: 120 to 150 shows as $120k – $150k.">
         <div class="salary-row">
-          <span class="salary-input">
-            <input id="salaryMin" type="number" min="1" step="1" inputmode="numeric" value={form.salaryMin} aria-label="Minimum salary in thousands" class={[errors.salaryMin && "is-error"]}>
-          </span>
+          <InputGroup>
+            <NumberInput value={form.salaryMin} min={1} smallStep={1} buttons="none" invalid={!!errors.salaryMin} attrs={{ id: "salaryMin", "aria-label": "Minimum salary in thousands" }} />
+            <InputGroupAddon><InputGroupText>$</InputGroupText></InputGroupAddon>
+            <InputGroupAddon align="inline-end"><InputGroupText>k</InputGroupText></InputGroupAddon>
+          </InputGroup>
           <span class="hint">to</span>
-          <span class="salary-input">
-            <input type="number" min="1" step="1" inputmode="numeric" value={form.salaryMax} aria-label="Maximum salary in thousands" class={[errors.salaryMin && "is-error"]}>
-          </span>
+          <InputGroup>
+            <NumberInput value={form.salaryMax} min={1} smallStep={1} buttons="none" invalid={!!errors.salaryMin} attrs={{ "aria-label": "Maximum salary in thousands" }} />
+            <InputGroupAddon><InputGroupText>$</InputGroupText></InputGroupAddon>
+            <InputGroupAddon align="inline-end"><InputGroupText>k</InputGroupText></InputGroupAddon>
+          </InputGroup>
         </div>
       </Field>
 

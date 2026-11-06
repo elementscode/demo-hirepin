@@ -13,7 +13,7 @@ export async function createListing(form: ListingForm, feature: boolean): Promis
   validateListing(form);
 
   let listing = tx(() => {
-    let logoId = form.logo ? saveLogo(form.logo) : null;
+    let logoId = form.logo.length > 0 ? saveLogo(form.logo[0]) : null;
 
     let row = sql<{ id: string; editToken: string }>(`
       insert into listings (companyName, companyUrl, logoId, title, category, jobType, location,

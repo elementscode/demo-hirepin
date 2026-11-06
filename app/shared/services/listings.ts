@@ -62,7 +62,7 @@ export interface ListingForm {
   description: string;
   applyUrl: string;
   employerEmail: string;
-  logo: File | null;
+  logo: File[];
 }
 
 const LOGO_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
@@ -208,10 +208,12 @@ export function validateListing(form: ListingForm) {
     errors.employerEmail = ["Enter the email we should send your edit link to."];
   }
 
-  if (form.logo) {
-    if (!LOGO_TYPES.has(form.logo.contentType)) {
+  let logo = form.logo[0];
+
+  if (logo) {
+    if (!LOGO_TYPES.has(logo.contentType)) {
       errors.logo = ["Upload a png, jpg, gif or webp image."];
-    } else if (form.logo.size > LOGO_MAX_BYTES) {
+    } else if (logo.size > LOGO_MAX_BYTES) {
       errors.logo = ["Keep the logo under 1 MB."];
     }
   }
