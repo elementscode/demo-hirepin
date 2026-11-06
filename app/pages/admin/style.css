@@ -32,11 +32,6 @@
   color: var(--ink-soft);
 }
 
-.admin-tabs {
-  max-width: 100%;
-  overflow-x: auto;
-}
-
 @media (max-width: 56rem) {
   .admin-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));

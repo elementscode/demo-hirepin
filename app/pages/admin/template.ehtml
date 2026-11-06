@@ -46,6 +46,7 @@ const COLUMNS: DataTableColumn[] = [
     value: (l) => `${l.title} ${l.companyName} ${l.employerEmail}`,
     cell: (l) => ({
       text: l.title,
+      href: l.status === "live" ? `/jobs/${l.id}` : undefined,
       description: `${l.companyName} · ${l.employerEmail}`,
     }),
     sortFn: (a, b) => String(a.original.title).localeCompare(String(b.original.title)),
@@ -58,7 +59,7 @@ const COLUMNS: DataTableColumn[] = [
     options: [
       { value: "live", tone: "success" },
       { value: "draft", tone: "warning" },
-      { value: "expired", tone: "outline" },
+      { value: "expired", tone: "neutral" },
       { value: "removed", tone: "danger" },
       { value: "featured", tone: "accent" },
     ],
@@ -72,13 +73,6 @@ const COLUMNS: DataTableColumn[] = [
 
 function actions(state: AdminState): RowAction[] {
   return [
-    {
-      id: "view",
-      label: "View on the board",
-      icon: "external-link",
-      hidden: (l) => l.status !== "live",
-      onSelect: (l) => redirect(`/jobs/${l.id}`),
-    },
     {
       id: "edit",
       label: "Edit",
@@ -103,7 +97,7 @@ function actions(state: AdminState): RowAction[] {
       icon: "undo",
       hidden: (l) => l.status !== "removed",
       onSelect: (l) => {
-        void onRestore(state, l as AdminListing);
+        state.listings = restoreListing(l.id);
       },
     },
   ];
@@ -121,10 +115,6 @@ function onRemove(state: AdminState) {
 
 function removeTitle(listing: AdminListing | null): string {
   return listing ? `Remove "${listing.title}" at ${listing.companyName}?` : "";
-}
-
-async function onRestore(state: AdminState, listing: AdminListing): Promise<void> {
-  state.listings = restoreListing(listing.id);
 }
 
 function onSignout() {
@@ -179,7 +169,7 @@ function onSignout() {
         </div>
 
         <div class="stack is-md">
-          <Tabs value={state.status} class="admin-tabs">
+          <Tabs value={state.status}>
             <TabsList label="Listing status">
               <TabsTrigger e:for={tab of TABS} value={tab.value}>
                 {tab.label} <span class="hint">{countOf(state, tab.value)}</span>
@@ -197,7 +187,9 @@ function onSignout() {
                      pagination={false}
                      filterable={false}
                      exportable={false}
-                     groupable={false} />
+                     groupable={false}
+                     viewMenu={false}
+                     savedViews={false} />
         </div>
 
         <AlertDialog open={state.confirming} title={removeTitle(state.removing)} description="It comes off the board right away.">
