@@ -1,6 +1,7 @@
 import "./style.css";
 import favicon from "#app/shared/assets/favicons/favicon.svg";
 import { Layout } from "#app/shared/templates/layout";
+import { Button } from "@elements/ui/button";
 
 <html lang="en" class="page-unsubscribe" (email: string)>
   <head>
@@ -14,7 +15,7 @@ import { Layout } from "#app/shared/templates/layout";
         <h1>You're unsubscribed</h1>
         <p e:if={email} class="lede">{email} won't get the weekly hirepin email any more.</p>
         <p e:else class="lede">This link has already been used, so there's nothing left to unsubscribe.</p>
-        <p><a class="button is-primary" href="/">Browse jobs</a></p>
+        <p><Button variant="primary" href="/">Browse jobs</Button></p>
       </div>
     </Layout>
   </body>

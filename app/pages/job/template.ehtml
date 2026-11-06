@@ -4,6 +4,10 @@ import favicon from "#app/shared/assets/favicons/favicon.svg";
 import { Layout } from "#app/shared/templates/layout";
 import { CATEGORY_LABELS, JOB_TYPE_LABELS, Listing } from "#app/shared/services/listings";
 import { formatDate, formatSalary } from "#app/shared/format";
+import { Avatar } from "@elements/ui/avatar";
+import { Badge } from "@elements/ui/badge";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent } from "@elements/ui/card";
 
 function hostOf(url: string): string {
   return url.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
@@ -23,16 +27,15 @@ function hostOf(url: string): string {
         <div class="job-layout">
           <article class="stack is-xl">
             <header class="job-head">
-              <img e:if={listing.logoUrl} class="job-head-logo" src={listing.logoUrl!} alt={`${listing.companyName} logo`} width="72" height="72">
-              <span e:else class="job-head-logo is-blank" aria-hidden="true">{listing.companyName.slice(0, 1)}</span>
+              <Avatar class="job-head-logo" shape="square" src={listing.logoUrl ?? ""} alt={listing.logoUrl ? `${listing.companyName} logo` : ""} fallback={listing.companyName.slice(0, 1)} />
 
               <div class="stack is-xs">
                 <h1>{listing.title}</h1>
                 <div class="job-head-company">{listing.companyName} · {listing.location}</div>
                 <div class="cluster is-xs">
-                  <span e:if={listing.featured} class="pill is-accent">Featured</span>
-                  <span class="pill">{CATEGORY_LABELS[listing.category]}</span>
-                  <span class="pill">{JOB_TYPE_LABELS[listing.jobType]}</span>
+                  <Badge e:if={listing.featured} variant="accent">Featured</Badge>
+                  <Badge variant="outline">{CATEGORY_LABELS[listing.category]}</Badge>
+                  <Badge variant="outline">{JOB_TYPE_LABELS[listing.jobType]}</Badge>
                 </div>
               </div>
             </header>
@@ -40,16 +43,14 @@ function hostOf(url: string): string {
             <div class="prose">{raw(body)}</div>
 
             <div class="job-apply-foot cluster">
-              <a class="button is-primary is-lg" href={listing.applyUrl} target="_blank" rel="noopener nofollow">
-                Apply for this job
-              </a>
+              <Button variant="primary" size="lg" href={listing.applyUrl} attrs={{ target: "_blank", rel: "noopener nofollow" }}>Apply for this job</Button>
               <span class="hint">Opens {listing.companyName}'s application page.</span>
             </div>
           </article>
 
-          <aside class="job-aside card">
-            <div class="card-body stack is-md">
-              <a class="button is-primary is-block" href={listing.applyUrl} target="_blank" rel="noopener nofollow">Apply now</a>
+          <Card class="job-aside">
+            <CardContent class="stack is-md">
+              <Button variant="primary" block href={listing.applyUrl} attrs={{ target: "_blank", rel: "noopener nofollow" }}>Apply now</Button>
 
               <dl class="job-facts">
                 <dt>Salary</dt>
@@ -66,9 +67,9 @@ function hostOf(url: string): string {
                 </dd>
               </dl>
 
-              <a e:if={isAdmin} class="button is-ghost is-sm is-block" href={`/admin?q=${encodeURIComponent(listing.title)}`}>Review in admin</a>
-            </div>
-          </aside>
+              <Button e:if={isAdmin} variant="ghost" size="sm" block href={`/admin?q=${encodeURIComponent(listing.title)}`}>Review in admin</Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Layout>

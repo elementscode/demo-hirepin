@@ -28,19 +28,7 @@
 }
 
 .job-head-logo {
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: var(--radius-lg);
-  object-fit: cover;
-  background: var(--bg-muted);
-}
-
-.job-head-logo.is-blank {
-  display: grid;
-  place-items: center;
-  font-size: var(--text-2xl);
-  font-weight: var(--weight-bold);
-  color: var(--ink-soft);
+  --avatar-size: 4.5rem;
 }
 
 .job-head-company {
@@ -93,8 +81,7 @@
   }
 
   .job-head-logo {
-    width: 3.5rem;
-    height: 3.5rem;
+    --avatar-size: 3.5rem;
   }
 
   .job-head h1 {
