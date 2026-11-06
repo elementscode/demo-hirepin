@@ -134,7 +134,7 @@ function daysLeft(expiresAt: Date | null): number {
               <div e:switch={state.listing.status}>
                 <Badge e:case="live" variant="success" dot>Live</Badge>
                 <Badge e:case="draft" variant="warning" dot>Draft, not published</Badge>
-                <Badge e:case="expired" variant="outline" dot>Expired</Badge>
+                <Badge e:case="expired" variant="neutral" dot>Expired</Badge>
                 <Badge e:default variant="danger" dot>Removed</Badge>
               </div>
 

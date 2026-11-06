@@ -34,8 +34,8 @@ function hostOf(url: string): string {
                 <div class="job-head-company">{listing.companyName} · {listing.location}</div>
                 <div class="cluster is-xs">
                   <Badge e:if={listing.featured} variant="accent">Featured</Badge>
-                  <Badge variant="outline">{CATEGORY_LABELS[listing.category]}</Badge>
-                  <Badge variant="outline">{JOB_TYPE_LABELS[listing.jobType]}</Badge>
+                  <Badge variant="neutral">{CATEGORY_LABELS[listing.category]}</Badge>
+                  <Badge variant="neutral">{JOB_TYPE_LABELS[listing.jobType]}</Badge>
                 </div>
               </div>
             </header>

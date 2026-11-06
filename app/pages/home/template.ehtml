@@ -172,8 +172,8 @@ function hasFilters(f: Filters): boolean {
       <div class="job-tags cluster is-xs">
         <Badge e:if={job.featured} variant="accent">Featured</Badge>
         <Badge e:if={Date.now() - +job.publishedAt < 2 * DAY} variant="success">New</Badge>
-        <Badge variant="outline">{CATEGORY_LABELS[job.category]}</Badge>
-        <Badge variant="outline">{JOB_TYPE_LABELS[job.jobType]}</Badge>
+        <Badge variant="neutral">{CATEGORY_LABELS[job.category]}</Badge>
+        <Badge variant="neutral">{JOB_TYPE_LABELS[job.jobType]}</Badge>
       </div>
     </div>
 
