@@ -7,6 +7,11 @@ import { FieldErrors, ListingFields, blankListingForm } from "#app/shared/templa
 import { ListingForm } from "#app/shared/services/listings";
 import { formatCents } from "#app/shared/format";
 import { createListing } from "./services";
+import { Alert } from "@elements/ui/alert";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent } from "@elements/ui/card";
+import { Checkbox } from "@elements/ui/checkbox";
+import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from "@elements/ui/field";
 
 interface PostState {
   form: ListingForm;
@@ -63,36 +68,35 @@ function total(feature: boolean): number {
         <form class="post-layout" onsubmit={() => onSubmit(state)}>
           <ListingFields form={state.form} errors={state.errors} />
 
-          <aside class="post-summary card">
-            <div class="card-head"><h2>Your order</h2></div>
-            <div class="card-body stack is-md">
+          <Card title="Your order" level={2} class="post-summary">
+            <CardContent class="stack is-md">
               <div class="post-line">
                 <span>Listing, {config.hirepin.listingDays} days</span>
                 <span>{formatCents(config.hirepin.publishCents)}</span>
               </div>
 
-              <label class={["post-feature", state.feature && "is-on"]}>
-                <input type="checkbox" checked={state.feature}>
-                <span class="stack is-xs">
-                  <strong>Feature it for {formatCents(config.hirepin.featureCents)}</strong>
-                  <span class="hint">Pinned to the top of the board and highlighted for the full {config.hirepin.listingDays} days.</span>
-                </span>
-              </label>
+              <FieldLabel>
+                <Field orientation="horizontal" reserveError={false}>
+                  <Checkbox checked={state.feature} />
+                  <FieldContent>
+                    <FieldTitle>Feature it for {formatCents(config.hirepin.featureCents)}</FieldTitle>
+                    <FieldDescription>Pinned to the top of the board and highlighted for the full {config.hirepin.listingDays} days.</FieldDescription>
+                  </FieldContent>
+                </Field>
+              </FieldLabel>
 
               <div class="post-line is-total">
                 <span>Total</span>
                 <span>{formatCents(total(state.feature))}</span>
               </div>
 
-              <p e:if={state.error} class="error" role="alert">{state.error}</p>
+              <Alert e:if={state.error} variant="danger" description={state.error} />
 
-              <button type="submit" class={["is-primary is-lg is-block", state.busy && "is-loading"]} disabled={state.busy}>
-                {state.busy ? "Opening checkout…" : `Continue to payment`}
-              </button>
+              <Button type="submit" variant="primary" size="lg" block loading={state.busy}>Continue to payment</Button>
 
               <p class="hint">Secure card payment by Stripe. Your listing goes live the moment payment clears.</p>
-            </div>
-          </aside>
+            </CardContent>
+          </Card>
         </form>
       </div>
     </Layout>

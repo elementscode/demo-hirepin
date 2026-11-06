@@ -42,16 +42,11 @@
 }
 
 .listing-fields .logo-preview {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: var(--radius-md);
-  object-fit: cover;
-  background: var(--bg-muted);
-  border: 1px dashed var(--rule-strong);
+  --avatar-size: 3.5rem;
 }
 
-.listing-fields .description-tabs {
-  margin-bottom: var(--space-2);
+.listing-fields .logo-preview[data-status="idle"] .avatar-fallback {
+  border: 1px dashed var(--rule-strong);
 }
 
 .listing-fields textarea {
