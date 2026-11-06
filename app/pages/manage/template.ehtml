@@ -7,6 +7,12 @@ import { FieldErrors, ListingFields } from "#app/shared/templates/listing-fields
 import { Listing, ListingForm } from "#app/shared/services/listings";
 import { formatCents, formatDate } from "#app/shared/format";
 import { payForListing, updateListing } from "./services";
+import { Alert, AlertTitle, AlertDescription } from "@elements/ui/alert";
+import { Badge } from "@elements/ui/badge";
+import { Button } from "@elements/ui/button";
+import { Card, CardContent } from "@elements/ui/card";
+import { Checkbox } from "@elements/ui/checkbox";
+import { Label } from "@elements/ui/label";
 
 interface ManageState {
   listing: Listing;
@@ -102,34 +108,34 @@ function daysLeft(expiresAt: Date | null): number {
           <p class="lede">{state.listing.companyName} · keep this page's link private: it is the key to your listing.</p>
         </div>
 
-        <div e:if={justPaid && state.listing.status === "live"} class="callout is-success">
-          <div class="callout-title">Payment received. Your listing is live.</div>
-          <div class="callout-body">We've emailed your receipt and this link. <a href={`/jobs/${state.listing.id}`}>See it on the board</a>.</div>
-        </div>
+        <Alert e:if={justPaid && state.listing.status === "live"} variant="success" role="status">
+          <AlertTitle>Payment received. Your listing is live.</AlertTitle>
+          <AlertDescription>We've emailed your receipt and this link. <a href={`/jobs/${state.listing.id}`}>See it on the board</a>.</AlertDescription>
+        </Alert>
 
-        <div e:elseif={justPaid} class="callout is-info">
-          <div class="callout-title">Payment processing</div>
-          <div class="callout-body">Your listing goes live as soon as Stripe confirms the payment. Reload in a minute.</div>
-        </div>
+        <Alert e:elseif={justPaid} variant="info" role="status"
+               title="Payment processing"
+               description="Your listing goes live as soon as Stripe confirms the payment. Reload in a minute." />
 
         <div class="manage-layout">
           <form class="stack is-lg" onsubmit={() => onSave(token, state)}>
             <ListingFields form={state.form} errors={state.errors} logoUrl={state.listing.logoUrl} showEmail={false} />
 
+            <Alert e:if={state.error} variant="danger" description={state.error} />
+
             <div class="manage-save cluster">
-              <span e:if={state.saved} class="pill is-success"><span class="pill-dot"></span>Saved</span>
-              <span e:if={state.error} class="error" role="alert">{state.error}</span>
-              <button type="submit" class="is-primary">Save changes</button>
+              <Badge e:if={state.saved} variant="success" dot>Saved</Badge>
+              <Button type="submit" variant="primary">Save changes</Button>
             </div>
           </form>
 
-          <aside class="manage-status card">
-            <div class="card-body stack is-md">
+          <Card class="manage-status">
+            <CardContent class="stack is-md">
               <div e:switch={state.listing.status}>
-                <span e:case="live" class="pill is-success"><span class="pill-dot"></span>Live</span>
-                <span e:case="draft" class="pill is-warning"><span class="pill-dot"></span>Draft, not published</span>
-                <span e:case="expired" class="pill"><span class="pill-dot"></span>Expired</span>
-                <span e:default class="pill is-danger"><span class="pill-dot"></span>Removed</span>
+                <Badge e:case="live" variant="success" dot>Live</Badge>
+                <Badge e:case="draft" variant="warning" dot>Draft, not published</Badge>
+                <Badge e:case="expired" variant="outline" dot>Expired</Badge>
+                <Badge e:default variant="danger" dot>Removed</Badge>
               </div>
 
               <dl class="manage-facts">
@@ -147,33 +153,29 @@ function daysLeft(expiresAt: Date | null): number {
                 {daysLeft(state.listing.expiresAt)} days left. We'll email you {config.hirepin.reminderDays} days before it expires.
               </p>
 
-              <a e:if={state.listing.status === "live"} class="button is-block" href={`/jobs/${state.listing.id}`}>View on the board</a>
+              <Button e:if={state.listing.status === "live"} block href={`/jobs/${state.listing.id}`}>View on the board</Button>
 
               <div e:if={state.listing.status === "draft" || state.listing.status === "expired"} class="stack is-sm">
-                <label class="manage-feature">
-                  <input type="checkbox" checked={state.feature}>
-                  <span>Also feature it, +{formatCents(config.hirepin.featureCents)}</span>
-                </label>
-                <button class={["is-primary is-block", state.paying && "is-loading"]}
-                        disabled={state.paying}
-                        onclick={() => onPay(token, state, state.feature)}>
+                <Label class="manage-feature">
+                  <Checkbox checked={state.feature} />
+                  Also feature it, +{formatCents(config.hirepin.featureCents)}
+                </Label>
+                <Button variant="primary" block loading={state.paying} onclick={() => onPay(token, state, state.feature)}>
                   {state.listing.status === "draft" ? "Publish" : "Renew"} for {formatCents(config.hirepin.publishCents + (state.feature ? config.hirepin.featureCents : 0))}
-                </button>
+                </Button>
                 <p class="hint">{config.hirepin.listingDays} days on the board, paid by card through Stripe.</p>
               </div>
 
               <div e:if={state.listing.status === "live" && !state.listing.featured} class="stack is-sm">
-                <button class={["is-primary is-block", state.paying && "is-loading"]}
-                        disabled={state.paying}
-                        onclick={() => onPay(token, state, true)}>
+                <Button variant="primary" block loading={state.paying} onclick={() => onPay(token, state, true)}>
                   Feature it for {formatCents(config.hirepin.featureCents)}
-                </button>
+                </Button>
                 <p class="hint">Pins it to the top of the board until it expires.</p>
               </div>
 
-              <p e:if={state.payError} class="error" role="alert">{state.payError}</p>
-            </div>
-          </aside>
+              <Alert e:if={state.payError} variant="danger" description={state.payError} />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Layout>

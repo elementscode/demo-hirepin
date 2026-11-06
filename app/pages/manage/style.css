@@ -47,16 +47,7 @@
 }
 
 .manage-feature {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--space-3);
-  align-items: start;
   font-size: var(--text-sm);
-  cursor: pointer;
-}
-
-.manage-feature input {
-  margin-top: 0.15rem;
 }
 
 .manage-save {
