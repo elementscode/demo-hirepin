@@ -40,18 +40,7 @@
 }
 
 .checkout-logo {
-  width: 3rem;
-  height: 3rem;
-  border-radius: var(--radius-md);
-  object-fit: cover;
-  background: var(--bg-muted);
-}
-
-.checkout-logo.is-blank {
-  display: grid;
-  place-items: center;
-  font-weight: var(--weight-bold);
-  color: var(--ink-soft);
+  --avatar-size: 3rem;
 }
 
 .checkout-head .eyebrow {

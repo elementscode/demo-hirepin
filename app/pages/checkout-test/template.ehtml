@@ -4,6 +4,10 @@ import favicon from "#app/shared/assets/favicons/favicon.svg";
 import { ListingPurchase, PurchaseLine } from "#app/shared/checkout";
 import { formatCents } from "#app/shared/format";
 import { payTestListing } from "./services";
+import { Alert } from "@elements/ui/alert";
+import { Avatar } from "@elements/ui/avatar";
+import { Badge } from "@elements/ui/badge";
+import { Button } from "@elements/ui/button";
 
 interface PayState {
   busy: boolean;
@@ -43,13 +47,12 @@ function onPay(purchase: ListingPurchase, state: PayState) {
           </svg>
           hirepin
         </a>
-        <span class="pill is-warning"><span class="pill-dot"></span>Test mode</span>
+        <Badge variant="warning" dot>Test mode</Badge>
       </div>
 
       <section class="checkout-card card" aria-labelledby="checkout-title">
         <div class="checkout-head">
-          <img e:if={purchase.logoUrl} class="checkout-logo" src={purchase.logoUrl!} alt="" width="48" height="48">
-          <span e:else class="checkout-logo is-blank" aria-hidden="true">{purchase.companyName.slice(0, 1)}</span>
+          <Avatar class="checkout-logo" shape="square" src={purchase.logoUrl ?? ""} fallback={purchase.companyName.slice(0, 1)} />
           <div class="stack is-xs">
             <p class="eyebrow">Pay hirepin</p>
             <h1 id="checkout-title" class="checkout-total">{formatCents(total)}</h1>
@@ -71,13 +74,9 @@ function onPay(purchase: ListingPurchase, state: PayState) {
         </ul>
 
         <div class="checkout-pay stack is-sm">
-          <p e:if={state.error} class="error" role="alert">{state.error}</p>
-          <button class={["is-primary is-lg is-block", state.busy && "is-loading"]}
-                  disabled={state.busy}
-                  onclick={() => onPay(purchase, state)}>
-            {state.busy ? "Paying…" : `Pay ${formatCents(total)}`}
-          </button>
-          <a class="button is-ghost is-block" href={`/manage/${purchase.editToken}`}>Cancel</a>
+          <Alert e:if={state.error} variant="danger" description={state.error} />
+          <Button variant="primary" size="lg" block loading={state.busy} onclick={() => onPay(purchase, state)}>Pay {formatCents(total)}</Button>
+          <Button variant="ghost" block href={`/manage/${purchase.editToken}`}>Cancel</Button>
         </div>
       </section>
 
