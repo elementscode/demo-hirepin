@@ -12,7 +12,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   gap: var(--space-1) var(--space-3);
-  margin: var(--space-2) 0 0;
+  margin: var(--space-2) 0 var(--space-3);
 }
 
 .signin-demo dt {
